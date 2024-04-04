@@ -1,0 +1,250 @@
+From f4d0faa256057dc56647ff734069bdffa52e487a Mon Sep 17 00:00:00 2001
+From: Marcin Radomski <marcin@mradomski.pl>
+Date: Wed, 20 Mar 2024 16:56:28 +0000
+Subject: [PATCH] Don't rename errno to libc_errno
+
+See b/331344966 for status of the efforts to upstream this.
+
+Change-Id: Ied4890f9a6217c627624daa33d98b1bb78081bba
+---
+ Cargo.toml                           | 16 ++++++----------
+ Cargo.toml.orig                      | 13 ++++++-------
+ src/backend/libc/event/syscalls.rs   |  2 ++
+ src/backend/libc/fs/dir.rs           |  2 +-
+ src/backend/libc/fs/syscalls.rs      |  2 ++
+ src/backend/libc/io/errno.rs         |  2 +-
+ src/backend/libc/io/syscalls.rs      |  2 +-
+ src/backend/libc/process/syscalls.rs |  2 ++
+ src/backend/libc/pty/syscalls.rs     |  2 ++
+ src/weak.rs                          |  2 ++
+ 10 files changed, 25 insertions(+), 20 deletions(-)
+
+diff --git a/Cargo.toml b/Cargo.toml
+index 8f091a9a..19269d40 100644
+--- a/Cargo.toml
++++ b/Cargo.toml
+@@ -101,10 +101,9 @@ version = "1.0"
+ [dev-dependencies.libc]
+ version = "0.2.152"
+ 
+-[dev-dependencies.libc_errno]
++[dev-dependencies.errno]
+ version = "0.3.8"
+ default-features = false
+-package = "errno"
+ 
+ [dev-dependencies.memoffset]
+ version = "0.9.0"
+@@ -191,7 +190,7 @@ std = [
+     "bitflags/std",
+     "alloc",
+     "libc?/std",
+-    "libc_errno?/std",
++    "errno?/std",
+ ]
+ stdio = []
+ system = ["linux-raw-sys/system"]
+@@ -200,7 +199,7 @@ thread = ["linux-raw-sys/prctl"]
+ time = []
+ use-explicitly-provided-auxv = []
+ use-libc = [
+-    "libc_errno",
++    "errno",
+     "libc",
+ ]
+ use-libc-auxv = []
+@@ -224,11 +223,10 @@ features = ["extra_traits"]
+ optional = true
+ default-features = false
+ 
+-[target."cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))".dependencies.libc_errno]
++[target."cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))".dependencies.errno]
+ version = "0.3.8"
+ optional = true
+ default-features = false
+-package = "errno"
+ 
+ [target."cfg(all(not(rustix_use_libc), not(miri), target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\"))))".dependencies.linux-raw-sys]
+ version = "0.4.12"
+@@ -247,19 +245,17 @@ version = "0.2.152"
+ features = ["extra_traits"]
+ default-features = false
+ 
+-[target."cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))".dependencies.libc_errno]
++[target."cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = \"linux\", target_endian = \"little\", any(target_arch = \"arm\", all(target_arch = \"aarch64\", target_pointer_width = \"64\"), target_arch = \"riscv64\", all(rustix_use_experimental_asm, target_arch = \"powerpc64\"), all(rustix_use_experimental_asm, target_arch = \"mips\"), all(rustix_use_experimental_asm, target_arch = \"mips32r6\"), all(rustix_use_experimental_asm, target_arch = \"mips64\"), all(rustix_use_experimental_asm, target_arch = \"mips64r6\"), target_arch = \"x86\", all(target_arch = \"x86_64\", target_pointer_width = \"64\")))))))".dependencies.errno]
+ version = "0.3.8"
+ default-features = false
+-package = "errno"
+ 
+ [target."cfg(any(target_os = \"android\", target_os = \"linux\"))".dependencies.once_cell]
+ version = "1.5.2"
+ optional = true
+ 
+-[target."cfg(windows)".dependencies.libc_errno]
++[target."cfg(windows)".dependencies.errno]
+ version = "0.3.8"
+ default-features = false
+-package = "errno"
+ 
+ [target."cfg(windows)".dependencies.windows-sys]
+ version = "0.52.0"
+diff --git a/Cargo.toml.orig b/Cargo.toml.orig
+index ffde0dba..4592ae97 100644
+--- a/Cargo.toml.orig
++++ b/Cargo.toml.orig
+@@ -38,7 +38,7 @@ once_cell = { version = "1.5.2", optional = true }
+ # Enabling only the libc backend will limit available functionality.
+ [target.'cfg(all(not(rustix_use_libc), not(miri), target_os = "linux", target_endian = "little", any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64"))))'.dependencies]
+ linux-raw-sys = { version = "0.4.12", default-features = false, features = ["general", "errno", "ioctl", "no_std", "elf"], optional = true }
+-libc_errno = { package = "errno", version = "0.3.8", default-features = false, optional = true }
++errno = { version = "0.3.8", default-features = false, optional = true }
+ libc = { version = "0.2.152", default-features = false, features = ["extra_traits"], optional = true }
+ 
+ # Dependencies for platforms where only libc is supported:
+@@ -46,7 +46,7 @@ libc = { version = "0.2.152", default-features = false, features = ["extra_trait
+ # On all other Unix-family platforms, and under Miri, we always use the libc
+ # backend, so enable its dependencies unconditionally.
+ [target.'cfg(all(not(windows), any(rustix_use_libc, miri, not(all(target_os = "linux", target_endian = "little", any(target_arch = "arm", all(target_arch = "aarch64", target_pointer_width = "64"), target_arch = "riscv64", all(rustix_use_experimental_asm, target_arch = "powerpc64"), all(rustix_use_experimental_asm, target_arch = "mips"), all(rustix_use_experimental_asm, target_arch = "mips32r6"), all(rustix_use_experimental_asm, target_arch = "mips64"), all(rustix_use_experimental_asm, target_arch = "mips64r6"), target_arch = "x86", all(target_arch = "x86_64", target_pointer_width = "64")))))))'.dependencies]
+-libc_errno = { package = "errno", version = "0.3.8", default-features = false }
++errno = { version = "0.3.8", default-features = false }
+ libc = { version = "0.2.152", default-features = false, features = ["extra_traits"] }
+ 
+ # Additional dependencies for Linux with the libc backend:
+@@ -68,15 +68,14 @@ features = [
+ 
+ # For the libc backend on Windows, also use the errno crate, which has Windows
+ # support.
+-[target.'cfg(windows)'.dependencies.libc_errno]
++[target.'cfg(windows)'.dependencies.errno]
+ version = "0.3.8"
+-package = "errno"
+ default-features = false
+ 
+ [dev-dependencies]
+ tempfile = "3.5.0"
+ libc = "0.2.152"
+-libc_errno = { package = "errno", version = "0.3.8", default-features = false }
++errno = { version = "0.3.8", default-features = false }
+ serial_test = "2.0.0"
+ memoffset = "0.9.0"
+ flate2 = "1.0"
+@@ -124,10 +123,10 @@ default = ["std", "use-libc-auxv"]
+ 
+ # This enables use of std. Disabling this enables `#![no_std]`, and requires
+ # Rust 1.64 or newer.
+-std = ["bitflags/std", "alloc", "libc?/std", "libc_errno?/std"]
++std = ["bitflags/std", "alloc", "libc?/std", "errno?/std"]
+ 
+ # Enable this to request the libc backend.
+-use-libc = ["libc_errno", "libc"]
++use-libc = ["errno", "libc"]
+ 
+ # Enable `rustix::event::*`.
+ event = []
+diff --git a/src/backend/libc/event/syscalls.rs b/src/backend/libc/event/syscalls.rs
+index 725ec825..c3c5245e 100644
+--- a/src/backend/libc/event/syscalls.rs
++++ b/src/backend/libc/event/syscalls.rs
+@@ -25,6 +25,8 @@ use {crate::backend::conv::ret_owned_fd, crate::event::EventfdFlags};
+ #[cfg(all(feature = "alloc", bsd))]
+ use {crate::event::kqueue::Event, crate::utils::as_ptr, core::ptr::null};
+ 
++use errno as libc_errno;
++
+ #[cfg(any(
+     linux_kernel,
+     target_os = "freebsd",
+diff --git a/src/backend/libc/fs/dir.rs b/src/backend/libc/fs/dir.rs
+index 6c827432..e3d4dfd1 100644
+--- a/src/backend/libc/fs/dir.rs
++++ b/src/backend/libc/fs/dir.rs
+@@ -36,7 +36,7 @@ use c::readdir as libc_readdir;
+ use c::readdir64 as libc_readdir;
+ use core::fmt;
+ use core::ptr::NonNull;
+-use libc_errno::{errno, set_errno, Errno};
++use errno::{errno, set_errno, Errno};
+ 
+ /// `DIR*`
+ pub struct Dir {
+diff --git a/src/backend/libc/fs/syscalls.rs b/src/backend/libc/fs/syscalls.rs
+index 446601ac..4b3bff1d 100644
+--- a/src/backend/libc/fs/syscalls.rs
++++ b/src/backend/libc/fs/syscalls.rs
+@@ -89,6 +89,8 @@ use {
+     core::ptr::null,
+ };
+ 
++use errno as libc_errno;
++
+ #[cfg(all(target_env = "gnu", fix_y2038))]
+ weak!(fn __utimensat64(c::c_int, *const c::c_char, *const LibcTimespec, c::c_int) -> c::c_int);
+ #[cfg(all(target_env = "gnu", fix_y2038))]
+diff --git a/src/backend/libc/io/errno.rs b/src/backend/libc/io/errno.rs
+index 805ea679..8d3d00ac 100644
+--- a/src/backend/libc/io/errno.rs
++++ b/src/backend/libc/io/errno.rs
+@@ -4,7 +4,7 @@
+ //! `errno` value.
+ 
+ use crate::backend::c;
+-use libc_errno::errno;
++use errno::errno;
+ 
+ /// `errno`—An error code.
+ ///
+diff --git a/src/backend/libc/io/syscalls.rs b/src/backend/libc/io/syscalls.rs
+index da88f54b..1a5e1fbd 100644
+--- a/src/backend/libc/io/syscalls.rs
++++ b/src/backend/libc/io/syscalls.rs
+@@ -19,7 +19,7 @@ use crate::io::{self, FdFlags};
+ use crate::ioctl::{IoctlOutput, RawOpcode};
+ use core::cmp::min;
+ #[cfg(all(feature = "fs", feature = "net"))]
+-use libc_errno::errno;
++use errno::errno;
+ #[cfg(not(target_os = "espidf"))]
+ use {
+     crate::backend::MAX_IOV,
+diff --git a/src/backend/libc/process/syscalls.rs b/src/backend/libc/process/syscalls.rs
+index 46fd1821..8d931b95 100644
+--- a/src/backend/libc/process/syscalls.rs
++++ b/src/backend/libc/process/syscalls.rs
+@@ -72,6 +72,8 @@ use {
+     super::super::conv::ret_owned_fd, crate::process::PidfdFlags, crate::process::PidfdGetfdFlags,
+ };
+ 
++use errno as libc_errno;
++
+ #[cfg(any(linux_kernel, target_os = "dragonfly"))]
+ #[inline]
+ pub(crate) fn sched_getcpu() -> usize {
+diff --git a/src/backend/libc/pty/syscalls.rs b/src/backend/libc/pty/syscalls.rs
+index 2395efde..85d2255b 100644
+--- a/src/backend/libc/pty/syscalls.rs
++++ b/src/backend/libc/pty/syscalls.rs
+@@ -18,6 +18,8 @@ use {
+ #[cfg(not(linux_kernel))]
+ use crate::{backend::conv::ret_owned_fd, fd::OwnedFd, pty::OpenptFlags};
+ 
++use errno as libc_errno;
++
+ #[cfg(not(linux_kernel))]
+ #[inline]
+ pub(crate) fn openpt(flags: OpenptFlags) -> io::Result<OwnedFd> {
+diff --git a/src/weak.rs b/src/weak.rs
+index 3cda8e6c..56be05ce 100644
+--- a/src/weak.rs
++++ b/src/weak.rs
+@@ -38,6 +38,8 @@ use core::ptr::null_mut;
+ use core::sync::atomic::{self, AtomicPtr, Ordering};
+ use core::{marker, mem};
+ 
++use errno as libc_errno;
++
+ const NULL: *mut c_void = null_mut();
+ const INVALID: *mut c_void = 1 as *mut c_void;
+ 
+-- 
+2.44.0.396.g6e790dbe36-goog
+

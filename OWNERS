@@ -3,5 +3,4 @@ include platform/prebuilts/rust:main:/OWNERS
 
 dextero@google.com
 vill@google.com
-nputikhin@google.com
 istvannador@google.com

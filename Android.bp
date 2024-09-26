@@ -23,10 +23,10 @@ rust_library {
     edition: "2021",
     features: [
         "alloc",
-        "errno",
         "event",
         "fs",
         "libc",
+        "libc_errno",
         "mm",
         "std",
         "use-libc",
@@ -41,6 +41,7 @@ rust_library {
         "liberrno",
         "liblibc",
     ],
+    aliases: ["errno:libc_errno"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",

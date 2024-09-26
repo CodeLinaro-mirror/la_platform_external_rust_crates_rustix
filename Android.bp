@@ -34,8 +34,6 @@ rust_library {
     ],
     cfgs: [
         "libc",
-        "linux_kernel",
-        "linux_like",
         "static_assertions",
     ],
     rustlibs: [
@@ -50,4 +48,25 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "30",
+    target: {
+        linux: {
+            cfgs: [
+                "linux_kernel",
+                "linux_like",
+            ],
+        },
+        android: {
+            cfgs: [
+                "linux_kernel",
+                "linux_like",
+            ],
+        },
+        darwin: {
+            cfgs: [
+                "apple",
+                "bsd",
+            ],
+        },
+    },
+
 }

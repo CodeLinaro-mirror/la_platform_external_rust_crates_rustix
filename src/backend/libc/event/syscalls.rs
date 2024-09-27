@@ -25,8 +25,6 @@ use {crate::backend::conv::ret_owned_fd, crate::event::EventfdFlags};
 #[cfg(all(feature = "alloc", bsd))]
 use {crate::event::kqueue::Event, crate::utils::as_ptr, core::ptr::null};
 
-use errno as libc_errno;
-
 #[cfg(any(
     linux_kernel,
     target_os = "freebsd",

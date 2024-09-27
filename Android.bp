@@ -23,10 +23,10 @@ rust_library {
     edition: "2021",
     features: [
         "alloc",
-        "errno",
         "event",
         "fs",
         "libc",
+        "libc_errno",
         "mm",
         "std",
         "use-libc",
@@ -34,8 +34,6 @@ rust_library {
     ],
     cfgs: [
         "libc",
-        "linux_kernel",
-        "linux_like",
         "static_assertions",
     ],
     rustlibs: [
@@ -43,6 +41,7 @@ rust_library {
         "liberrno",
         "liblibc",
     ],
+    aliases: ["errno:libc_errno"],
     apex_available: [
         "//apex_available:platform",
         "//apex_available:anyapex",
@@ -50,4 +49,25 @@ rust_library {
     product_available: true,
     vendor_available: true,
     min_sdk_version: "30",
+    target: {
+        linux: {
+            cfgs: [
+                "linux_kernel",
+                "linux_like",
+            ],
+        },
+        android: {
+            cfgs: [
+                "linux_kernel",
+                "linux_like",
+            ],
+        },
+        darwin: {
+            cfgs: [
+                "apple",
+                "bsd",
+            ],
+        },
+    },
+
 }

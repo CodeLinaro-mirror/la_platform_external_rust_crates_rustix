@@ -72,8 +72,6 @@ use {
     super::super::conv::ret_owned_fd, crate::process::PidfdFlags, crate::process::PidfdGetfdFlags,
 };
 
-use errno as libc_errno;
-
 #[cfg(any(linux_kernel, target_os = "dragonfly"))]
 #[inline]
 pub(crate) fn sched_getcpu() -> usize {

@@ -38,8 +38,6 @@ use core::ptr::null_mut;
 use core::sync::atomic::{self, AtomicPtr, Ordering};
 use core::{marker, mem};
 
-use errno as libc_errno;
-
 const NULL: *mut c_void = null_mut();
 const INVALID: *mut c_void = 1 as *mut c_void;
 

@@ -89,8 +89,6 @@ use {
     core::ptr::null,
 };
 
-use errno as libc_errno;
-
 #[cfg(all(target_env = "gnu", fix_y2038))]
 weak!(fn __utimensat64(c::c_int, *const c::c_char, *const LibcTimespec, c::c_int) -> c::c_int);
 #[cfg(all(target_env = "gnu", fix_y2038))]

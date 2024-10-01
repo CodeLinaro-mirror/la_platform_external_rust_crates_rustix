@@ -19,7 +19,7 @@ use crate::io::{self, FdFlags};
 use crate::ioctl::{IoctlOutput, RawOpcode};
 use core::cmp::min;
 #[cfg(all(feature = "fs", feature = "net"))]
-use errno::errno;
+use libc_errno::errno;
 #[cfg(not(target_os = "espidf"))]
 use {
     crate::backend::MAX_IOV,

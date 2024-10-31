@@ -4,7 +4,7 @@
 //! `errno` value.
 
 use crate::backend::c;
-use errno::errno;
+use libc_errno::errno;
 
 /// `errno`—An error code.
 ///

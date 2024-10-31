@@ -18,8 +18,6 @@ use {
 #[cfg(not(linux_kernel))]
 use crate::{backend::conv::ret_owned_fd, fd::OwnedFd, pty::OpenptFlags};
 
-use errno as libc_errno;
-
 #[cfg(not(linux_kernel))]
 #[inline]
 pub(crate) fn openpt(flags: OpenptFlags) -> io::Result<OwnedFd> {
